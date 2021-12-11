@@ -15,8 +15,16 @@ import kotlinx.coroutines.flow.flow
  *  like [start], [pause], [reset], [lap] and [configure] the stopwatch.
  *
  *  Also provide the status of the stopwatch either it's [IDLE], [RUNNING] or [PAUSED]
+ *
+ *  Make sure to call [clear] to cancel coroutines when reach the end of
+ *  lifecycle like Activity's onDestroyed() or ViewModel's onCleared()
+ *
+ *  @param scope the scope where all the work is done, default to CoroutineScope(Job()).
+ *  You can pass any lifecycle scope like viewModelScope or lifecycleScope or a custom scope.
  */
-class Stopwatch {
+class Stopwatch(
+    private val scope: CoroutineScope = CoroutineScope(Job())
+) {
     companion object {
         /** The current status of stopwatch is idle */
         const val IDLE = 0
@@ -60,7 +68,7 @@ class Stopwatch {
             when (it) {
                 Operation.START -> {
                     job?.cancel()
-                    job = startTimer(delay)
+                    job = scope.launch { startTimer(delay) }
                     status = RUNNING
                 }
                 Operation.PAUSE -> {
@@ -103,14 +111,14 @@ class Stopwatch {
     }
 
     /**
-     * Starts a job that emit time within a delay of [delay]
+     * Starts an infinite loop that emit time within a delay of [delay]
      * @param delay the delay which actual stopwatch emit the value
      */
-    private fun startTimer(delay: Long) = CoroutineScope(Dispatchers.IO).launch {
-        while (isActive) {
-            delay(delay)
+    private suspend fun startTimer(delay: Long) = withContext(Dispatchers.Default) {
+        while (true) {
             stopwatch += delay
             operationChannel.send(Operation.EMIT)
+            delay(delay)
         }
     }
 
@@ -139,6 +147,11 @@ class Stopwatch {
      * */
     fun configure(delay: Long) {
         this.delay = delay
+    }
+
+    /** Cancel all coroutines */
+    fun clear() {
+        scope.cancel()
     }
 }
 

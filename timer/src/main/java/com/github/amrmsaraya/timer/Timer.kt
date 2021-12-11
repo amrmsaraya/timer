@@ -17,9 +17,16 @@ import kotlinx.coroutines.flow.flow
  *  like [start], [pause], [reset] and [configure] the timer.
  *
  *  Also provide the status of the timer either it's [IDLE], [RUNNING] or [PAUSED]
+ *
+ *  Make sure to call [clear] to cancel coroutines when reach the end of
+ *  lifecycle like Activity's onDestroyed() or ViewModel's onCleared()
+ *
+ *  @param scope the scope where all the work is done, default to CoroutineScope(Job()).
+ *  You can pass any lifecycle scope like viewModelScope or lifecycleScope or a custom scope.
  */
-class Timer {
-
+class Timer(
+    private val scope: CoroutineScope = CoroutineScope(Job())
+) {
     companion object {
         /** The current status of timer is idle */
         const val IDLE = 0
@@ -64,7 +71,7 @@ class Timer {
                 }
                 Operation.START -> {
                     job?.cancel()
-                    job = startTimer(delay)
+                    job = scope.launch { startTimer(delay) }
                     status = RUNNING
                 }
                 Operation.PAUSE -> {
@@ -87,18 +94,18 @@ class Timer {
     }
 
     /**
-     * Starts a job that emit time within a delay of [delay]
+     * Starts an infinite loop that emit time within a delay of [delay]
      * @param delay the delay which actual timer emit the value
      */
-    private fun startTimer(delay: Long) = CoroutineScope(Dispatchers.IO).launch {
-        while (isActive) {
+    private suspend fun startTimer(delay: Long) = withContext(Dispatchers.IO) {
+        while (true) {
             if (timer > 0) {
-                delay(delay)
                 timer -= delay
                 operationChannel.send(Operation.EMIT)
             } else {
                 operationChannel.send(Operation.FINISH)
             }
+            delay(delay)
         }
     }
 
@@ -127,5 +134,10 @@ class Timer {
             this.configuredTime = timeMillis
         }
         operationChannel.send(Operation.CONFIGURE)
+    }
+
+    /** Cancel all coroutines */
+    fun clear() {
+        scope.cancel()
     }
 }
