@@ -4,7 +4,7 @@
 
 Timer is a general purpose kotlin library that use kotlin coroutines, flows and channels to provide timer features with the most easy and efficient way
 
-## Features
+## FEATURES
 - Stopwatch
 - Countdown timer
 - Observe timer using coroutine flow that emits `Time()`  class which provide time in an easy and formatted way
