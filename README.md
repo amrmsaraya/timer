@@ -15,16 +15,16 @@ Timer is a general purpose kotlin library that use kotlin coroutines, flows and 
 - Attach `CoroutineScope` like `viewModelScope` or `lifecycleScope` to the class constructor to cancel active coroutines or use the default scope provided by the class and call `clear()` function to prevent any memory leak 
 
 
-## Usage
+## USAGE
 #### Add the JitPack repository to your root build.gradle file 
 
 ```groovy
 allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
 	}
+}
 ```
 
 #### Add the dependency using Groovy
@@ -37,3 +37,5 @@ implementation 'com.github.amrmsaraya:timer:1.0.0'
 implementation("com.github.amrmsaraya:timer:1.0.0")
 ```
 
+## LICENSE
+Timer library is licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
