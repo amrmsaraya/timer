@@ -66,9 +66,6 @@ class Timer(
     fun getTimer(onFinish: () -> Unit = {}) = flow {
         operationChannel.consumeAsFlow().collect {
             when (it) {
-                Operation.CONFIGURE -> {
-                    timer = configuredTime
-                }
                 Operation.START -> {
                     job?.cancel()
                     job = scope.launch { startTimer(delay) }
@@ -124,16 +121,16 @@ class Timer(
         operationChannel.send(Operation.RESET)
     }
 
-    /** Configure the stopwatch
+    /** Configure the stopwatch, only works when status is IDLE
      * @param timeMillis the time to start counting down from in Milliseconds
      * @param delay the delay which timer emit time
      * */
-    suspend fun configure(timeMillis: Long, delay: Long = 10) {
-        this.delay = delay
-        if (timer == 0L) {
+    fun configure(timeMillis: Long, delay: Long = 10) {
+        if (status == IDLE) {
+            this.delay = delay
             this.configuredTime = timeMillis
+            timer = timeMillis
         }
-        operationChannel.send(Operation.CONFIGURE)
     }
 
     /** Cancel all coroutines */
