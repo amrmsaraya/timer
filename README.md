@@ -29,12 +29,12 @@ allprojects {
 
 #### Add the dependency using Groovy
 ```groovy
-implementation 'com.github.amrmsaraya:timer:1.0.0'
+implementation 'com.github.amrmsaraya:timer:1.0.1'
 ```
 
 #### Add the dependency using Kotlin DSL
 ```kotlin
-implementation("com.github.amrmsaraya:timer:1.0.0")
+implementation("com.github.amrmsaraya:timer:1.0.1")
 ```
 
 ## LICENSE
