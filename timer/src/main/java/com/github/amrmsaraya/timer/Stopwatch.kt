@@ -45,6 +45,9 @@ class Stopwatch(
     /** The job which holds the actual stopwatch coroutine */
     private var job: Job? = null
 
+    /** The start time value as milliseconds */
+    private var start = 0L
+
     /** The current stopwatch value as milliseconds*/
     private var stopwatch = 0L
 
@@ -68,6 +71,7 @@ class Stopwatch(
             when (it) {
                 Operation.START -> {
                     job?.cancel()
+                    start = System.currentTimeMillis() - stopwatch
                     job = scope.launch { startTimer(delay) }
                     status = RUNNING
                 }
@@ -116,9 +120,9 @@ class Stopwatch(
      */
     private suspend fun startTimer(delay: Long) = withContext(Dispatchers.Default) {
         while (true) {
-            stopwatch += delay
-            operationChannel.send(Operation.EMIT)
             delay(delay)
+            stopwatch = System.currentTimeMillis() - start
+            operationChannel.send(Operation.EMIT)
         }
     }
 

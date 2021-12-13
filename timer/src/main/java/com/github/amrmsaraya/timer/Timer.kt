@@ -44,6 +44,9 @@ class Timer(
     /** The job which holds the actual timer coroutine */
     private var job: Job? = null
 
+    /** The start time value as milliseconds */
+    private var start = 0L
+
     /** The current timer value as milliseconds*/
     private var timer = 0L
 
@@ -68,6 +71,7 @@ class Timer(
             when (it) {
                 Operation.START -> {
                     job?.cancel()
+                    start = System.currentTimeMillis() + timer
                     job = scope.launch { startTimer(delay) }
                     status = RUNNING
                 }
@@ -77,7 +81,7 @@ class Timer(
                 }
                 Operation.RESET -> {
                     job?.cancel()
-                    timer = configuredTime
+                    timer = 0
                     status = IDLE
                 }
                 Operation.FINISH -> {
@@ -95,15 +99,12 @@ class Timer(
      * @param delay the delay which actual timer emit the value
      */
     private suspend fun startTimer(delay: Long) = withContext(Dispatchers.IO) {
-        while (true) {
-            if (timer > 0) {
-                timer -= delay
-                operationChannel.send(Operation.EMIT)
-            } else {
-                operationChannel.send(Operation.FINISH)
-            }
+        while (start >= System.currentTimeMillis()) {
+            timer = start - System.currentTimeMillis()
+            operationChannel.send(Operation.EMIT)
             delay(delay)
         }
+        operationChannel.send(Operation.FINISH)
     }
 
     /** Start the timer */
@@ -128,8 +129,8 @@ class Timer(
     fun configure(timeMillis: Long, delay: Long = 10) {
         if (status == IDLE) {
             this.delay = delay
-            this.configuredTime = timeMillis
-            timer = timeMillis
+            configuredTime = timeMillis
+            timer = configuredTime
         }
     }
 
