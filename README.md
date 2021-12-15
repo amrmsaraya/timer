@@ -1,5 +1,4 @@
 # Timer
-[![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
 [![Jitpack](https://img.shields.io/jitpack/v/github/amrmsaraya/timer)](https://jitpack.io/#amrmsaraya/timer)
 
 Timer is a general purpose kotlin library that use kotlin coroutines, flows and channels to provide timer features with the most easy and efficient way
